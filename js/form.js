@@ -1,16 +1,19 @@
 import { isEscapeKey } from './util.js';
 import {pristine} from './validation.js';
+import {resetScale} from './picture-size.js';
+import { resetEffects } from './picture-effect.js';
 
 const body = document.querySelector('body');
 const uploadFile = body.querySelector('#upload-file');
 const uploadModal = body.querySelector('.img-upload__overlay');
 const uploadFileClose = uploadModal.querySelector('.img-upload__cancel');
 const uploadForm = document.querySelector('.img-upload__form');
-// const effectLevelElement = document.querySelector('.effect-level');
-// const effectsListElement = document.querySelector('.effects__list');
 const overlay = document.querySelector('.img-upload__overlay');
-const hashtagsInput = document.querySelector('text__hashtags');
-const commentTextarea = document.querySelector('text__description');
+const imgUploadPreviewElement = uploadForm.querySelector('.img-upload__preview');
+const hashtagsInputElement = uploadForm.querySelector('.text__hashtags');
+const commentTextareaElement = uploadForm.querySelector('.text__description');
+const effectsListElements = uploadForm.querySelectorAll('.effects__list input');
+
 
 let isUploadFormSending = false;
 
@@ -20,6 +23,8 @@ const closeModal = () => {
   body.classList.remove('modal-open');
   document.removeEventListener('keydown', onDocumentKeydown);
   uploadForm.reset();
+  resetScale();
+  resetEffects();
 };
 
 const onInputKeyDown = (evt) => {
@@ -42,10 +47,10 @@ const showModal = () => {
     closeModal();
   });
   // Отмена закрытия модального окана, когда фокус в поле ввода хеш-тегов
-  hashtagsInput.addEventListener('keydown', onInputKeyDown);
+  hashtagsInputElement.addEventListener('keydown', onInputKeyDown);
 
   // Отмена закрытия модального окана, когда фокус в поле ввода комментариев
-  commentTextarea.addEventListener('keydown', onInputKeyDown);
+  commentTextareaElement.addEventListener('keydown', onInputKeyDown);
   document.addEventListener('keydown', onDocumentKeydown);
 
   uploadForm.addEventListener('submit', (evt) => {
@@ -60,10 +65,24 @@ const showModal = () => {
   });
 };
 
+let currentEffect = undefined;
+let previousEffect = undefined;
+
 const initForm = () => {
   uploadFile.addEventListener('change', (evt) => {
     showModal();
   });
+  effectsListElements.forEach((element) => element.addEventListener('click', (evt) => {
+    previousEffect = currentEffect;
+    currentEffect = evt.currentTarget.value;
+    if(previousEffect) {
+      imgUploadPreviewElement.classList.remove(`effects__preview--${previousEffect}`);
+    }
+    if(currentEffect !== 'none') {
+      imgUploadPreviewElement.classList.add(`effects__preview--${currentEffect}`);
+    }
+    imgUploadPreviewElement.style = 'filter:sepia(0.5 )';
+  }));
 };
 
 
